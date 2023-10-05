@@ -45,9 +45,19 @@ app.get('/:trainnumber/:date', async (req, res) => {
         const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
 
         // Compare the dates
-        if (urlDateOnly > currentDateOnly) {
-            return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
+        //if (urlDateOnly > currentDateOnly) {
+         //   return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
+        //}
+        if(urlDate.getFullYear() > currentDate.getFullYear()){
+            return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (ano)' });
         }
+        else if(urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() > currentDate.getMonth()){
+            return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (mes)' });
+        }
+        else if(urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() === currentDate.getMonth() && urlDate.getDay() > currentDate.getDay()){
+            return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (dia)' });
+        }
+
 
         // Create the dynamic table name based on number and date
         const tableName = `${trainNumber}-${date}`;

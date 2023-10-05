@@ -5,20 +5,12 @@ const cors = require("cors");
 const app = express();
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
-  return res.status(200).json({
-    title: "Express Testing",
-    message: "The app is working properly!",
-  });
-});
-
-module.exports = router;
-
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('master', 'postgres', '2GPU1haRPLWBT', {
-    host: 'localhost',
+const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
+    host: 'cornelius.db.elephantsql.com', // Replace with your ElephantSQL database's hostname
+    port: 5432, // Default PostgreSQL port
     dialect: 'postgres',
-    dialectModule: require('pg')
+    dialectModule: require('pg'),
 });
 
 
@@ -28,7 +20,16 @@ app.use(
     })
 )
 const port = 9001;
-//
+
+router.get("/", async (req, res, next) => {
+  return res.status(200).json({
+    title: "Express Testing",
+    message: "The app is working properly!",
+  });
+});
+
+module.exports = router;
+
 
 app.get('/train-data', async (req, res) => {
     try {

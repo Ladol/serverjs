@@ -31,16 +31,18 @@ router.get("/", async (req, res, next) => {
 module.exports = router;
 
 
-app.get('/train-data', async (req, res) => {
+app.get('/:trainnumber/:date', async (req, res) => {
     try {
-        const response = await fetch('https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/4422/2023-10-05');
+        const trainNumber = req.params.trainnumber; // Extract the train number from the URL
+        const date = req.params.date; // Extract the date from the URL
+        const response = await fetch('https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
 
         // Create the dynamic table name based on number and date
-        const tableName = `${'4422'}-${'2023-10-05'}`;
+        const tableName = `${trainNumber}-${date}`;
 
         // Find an existing record with the same tableName
         const existingTrain = await Train.findOne({

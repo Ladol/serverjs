@@ -35,6 +35,18 @@ app.get('/:trainnumber/:date', async (req, res) => {
     try {
         const trainNumber = req.params.trainnumber; // Extract the train number from the URL
         const date = req.params.date; // Extract the date from the URL
+
+        // Parse the date string from the URL to a Date object
+        const urlDate = new Date(date);
+
+        // Get the current date
+        const currentDate = new Date();
+
+        // Compare the dates
+        if (urlDate > currentDate) {
+            return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
+        }
+
         // Use backticks for string interpolation
         const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}`;
 
@@ -43,6 +55,10 @@ app.get('/:trainnumber/:date', async (req, res) => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
+
+        if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO"){
+            return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
+        }
 
         // Create the dynamic table name based on number and date
         const tableName = `${trainNumber}-${date}`;

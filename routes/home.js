@@ -16,8 +16,8 @@ module.exports = router;
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('master', 'postgres', '2GPU1haRPLWBT', {
-    //host: 'localhost',
-    //dialect: 'postgres',
+    host: 'localhost',
+    dialect: 'postgres',
     dialectModule: require('pg')
 });
 

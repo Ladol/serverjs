@@ -6,6 +6,10 @@ const app = express();
 const router = express.Router();
 
 const { Sequelize, DataTypes } = require('sequelize');
+const pg = require('pg');
+
+// Set the `pg` module as the dialectModule
+pg.defaults.parseInt8 = true;
 const sequelize = new Sequelize('postgres://yxaysfby:2t27aEF1m7eYM95PD8CpVOb937ZenlAf@cornelius.db.elephantsql.com/yxaysfby');
 
 

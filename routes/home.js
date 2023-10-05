@@ -1,14 +1,26 @@
+const express = require("express");
+const Train = require('./models/Train');
+const fetch = require('node-fetch');
+const cors = require("cors");
+const app = express();
+const router = express.Router();
+
+router.get("/", async (req, res, next) => {
+  return res.status(200).json({
+    title: "Express Testing",
+    message: "The app is working properly!",
+  });
+});
+
+module.exports = router;
+
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('master', 'postgres', '2GPU1haRPLWBT', {
     host: 'localhost',
     dialect: 'postgres',
 });
 
-const express = require('express');
-const Train = require('./models/Train');
-const fetch = require('node-fetch');
-const cors = require("cors");
-const app = express();
+
 app.use(
     cors({
         origin: "*"

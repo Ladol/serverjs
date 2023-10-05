@@ -38,12 +38,14 @@ app.get('/:trainnumber/:date', async (req, res) => {
 
         // Parse the date string from the URL to a Date object
         const urlDate = new Date(date);
-
         // Get the current date
         const currentDate = new Date();
+        // Create new Date objects with only year, month, and day for comparison
+        const urlDateOnly = new Date(urlDate.getFullYear(), urlDate.getMonth(), urlDate.getDate());
+        const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
 
         // Compare the dates
-        if (urlDate > currentDate) {
+        if (urlDateOnly > currentDateOnly) {
             return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
         }
 
@@ -55,7 +57,7 @@ app.get('/:trainnumber/:date', async (req, res) => {
             where: { tableName },
         });
 
-        if (urlDate < currentDate && !existingTrain) {
+        if (urlDateOnly < currentDateOnly && !existingTrain) {
             return res.status(500).json({ error: 'Não temos dados para essa data :(' });
         }
 

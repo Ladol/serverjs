@@ -47,6 +47,18 @@ app.get('/:trainnumber/:date', async (req, res) => {
             return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
         }
 
+        // Create the dynamic table name based on number and date
+        const tableName = `${trainNumber}-${date}`;
+
+        // Find an existing record with the same tableName
+        const existingTrain = await Train.findOne({
+            where: { tableName },
+        });
+
+        if (urlDate < currentDate && !existingTrain) {
+            return res.status(500).json({ error: 'Não temos dados para essa data :(' });
+        }
+
         // Use backticks for string interpolation
         const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}`;
 
@@ -60,8 +72,6 @@ app.get('/:trainnumber/:date', async (req, res) => {
             return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
         }
 
-        // Create the dynamic table name based on number and date
-        const tableName = `${trainNumber}-${date}`;
 
         // Use Sequelize to find all trains with tableName starting with trainNumber
         const trainsWithTrainNumber = await Train.findAll({
@@ -78,11 +88,6 @@ app.get('/:trainnumber/:date', async (req, res) => {
             const delays = await calculateDelaysForTrain(train);
             delaysArray.push(delays);
         }
-
-        // Find an existing record with the same tableName
-        const existingTrain = await Train.findOne({
-            where: { tableName },
-        });
 
         if (existingTrain) {
             const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);

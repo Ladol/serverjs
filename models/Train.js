@@ -1,7 +1,9 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('master', 'postgres', '2GPU1haRPLWBT', {
-    host: 'localhost',
+const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
+    host: 'cornelius.db.elephantsql.com', // Replace with your ElephantSQL database's hostname
+    port: 5432, // Default PostgreSQL port
     dialect: 'postgres',
+    dialectModule: require('pg'),
 });
 
 const Train = sequelize.define('Train', {

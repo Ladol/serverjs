@@ -6,11 +6,12 @@ const app = express();
 const router = express.Router();
 
 const { Sequelize, DataTypes } = require('sequelize');
-const pg = require('pg');
-
-// Set the `pg` module as the dialectModule
-pg.defaults.parseInt8 = true;
-const sequelize = new Sequelize('postgres://yxaysfby:2t27aEF1m7eYM95PD8CpVOb937ZenlAf@cornelius.db.elephantsql.com/yxaysfby');
+const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
+    host: 'cornelius.db.elephantsql.com', // Replace with your ElephantSQL database's hostname
+    port: 5432, // Default PostgreSQL port
+    dialect: 'postgres',
+    dialectModule: require('pg'),
+});
 
 
 app.use(

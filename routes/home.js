@@ -35,8 +35,11 @@ app.get('/:trainnumber/:date', async (req, res) => {
     try {
         const trainNumber = req.params.trainnumber; // Extract the train number from the URL
         const date = req.params.date; // Extract the date from the URL
-        console.log('https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}')
-        const response = await fetch('https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}');
+        // Use backticks for string interpolation
+        const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}`;
+        console.log(url);
+
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }

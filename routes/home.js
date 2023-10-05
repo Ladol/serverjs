@@ -1,5 +1,5 @@
 const express = require("express");
-const Train = require('./models/Train');
+const Train = require('../models/Train');
 const fetch = require('node-fetch');
 const cors = require("cors");
 const app = express();

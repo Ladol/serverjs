@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "yxaysfby",
+    "password": "2t27aEF1m7eYM95PD8CpVOb937ZenlAf",
+    "database": "yxaysfby",
+    "host": "cornelius.db.elephantsql.com",
+    "dialect": "postgres"
+  },
+  "production": {
+   "username": "yxaysfby",
+    "password": "2t27aEF1m7eYM95PD8CpVOb937ZenlAf",
+    "database": "yxaysfby",
+    "host": "cornelius.db.elephantsql.com",
+    "dialect": "postgres"
+  }
+}

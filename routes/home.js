@@ -47,6 +47,22 @@ app.get('/:trainnumber/:date', async (req, res) => {
         // Create the dynamic table name based on number and date
         const tableName = `${trainNumber}-${date}`;
 
+        // Use Sequelize to find all trains with tableName starting with trainNumber
+        const trainsWithTrainNumber = await Train.findAll({
+            where: {
+            tableName: {
+                [Sequelize.Op.startsWith]: `${trainNumber}-`,
+            },
+            },
+        });
+        
+        // Calculate delays for each train and store them in an array
+        const delaysArray = [];
+        for (const train of trainsWithTrainNumber) {
+            const delays = await calculateDelaysForTrain(train);
+            delaysArray.push(delays);
+        }
+
         // Find an existing record with the same tableName
         const existingTrain = await Train.findOne({
             where: { tableName },
@@ -64,7 +80,11 @@ app.get('/:trainnumber/:date', async (req, res) => {
             }, {
                 fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
             });
-            return res.json(existingTrain);
+            const combinedResponse = {
+                ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
+                delaysArray,
+              };
+            return res.json(combinedResponse);
         } else {
             // Create a new record in the dynamic table
             const newTrain = await Train.create({
@@ -74,10 +94,12 @@ app.get('/:trainnumber/:date', async (req, res) => {
                 arrivalTime: data.response.DataHoraDestino,
                 stationsData: processStationData(data.response.NodesPassagemComboio),
             });
-            return res.json(newTrain);
+            const combinedResponse = {
+                ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
+                delaysArray,
+              };
+            return res.json(combinedResponse);
         }
-
-        res.json(data);
     } catch (error) {
         console.error('Error fetching and inserting train data:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -132,3 +154,33 @@ function processStationData(nodesPassagemComboio, existingStationsData = []) {
 
     return stationsData;
 }
+
+// Define a function to calculate delays for a given train
+async function calculateDelaysForTrain(train) {
+    const delays = {};
+    const tableNameParts = train.tableName.split('-');
+    const date = tableNameParts[1];
+  
+    // Initialize delays[date] array with zeros
+    delays[date] = new Array(train.stationsData.length).fill(0);
+  
+    // Calculate delays for each station
+    train.stationsData.forEach((station, index) => {
+      const scheduledTimeParts = station.ScheduledTime.split(':');
+      const arrivalTimeParts = station.ArrivalTime.split(':');
+      
+      const scheduledHours = parseInt(scheduledTimeParts[0], 10);
+      const scheduledMinutes = parseInt(scheduledTimeParts[1], 10);
+      
+      const arrivalHours = parseInt(arrivalTimeParts[0], 10);
+      const arrivalMinutes = parseInt(arrivalTimeParts[1], 10);
+  
+      // Calculate delay in minutes
+      const delay = (arrivalHours - scheduledHours) * 60 + (arrivalMinutes - scheduledMinutes);
+      
+      // Update the delay in the delays[date] array
+      delays[date][index] = delay;
+    });
+  
+    return { delays };
+  }

@@ -159,7 +159,7 @@ function processStationData(nodesPassagemComboio, existingStationsData = []) {
 async function calculateDelaysForTrain(train) {
     const delays = {};
     const tableNameParts = train.tableName.split('-');
-    const date = tableNameParts[1] + tableNameParts[2] + tableNameParts[3];
+    const date = tableNameParts[1] + '-' + tableNameParts[2] + '-' + tableNameParts[3];
   
     // Initialize delays[date] array with zeros
     delays[date] = new Array(train.stationsData.length).fill(0);

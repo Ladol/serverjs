@@ -37,7 +37,6 @@ app.get('/:trainnumber/:date', async (req, res) => {
         const date = req.params.date; // Extract the date from the URL
         // Use backticks for string interpolation
         const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${date}`;
-        console.log(url);
 
         const response = await fetch(url);
         if (!response.ok) {
@@ -65,22 +64,23 @@ app.get('/:trainnumber/:date', async (req, res) => {
             }, {
                 fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
             });
+            return res.json(existingTrain);
         } else {
             // Create a new record in the dynamic table
-            await Train.create({
+            const newTrain = await Train.create({
                 tableName,
                 name: data.response.Origem + ' to ' + data.response.Destino,
                 departureTime: data.response.DataHoraOrigem,
                 arrivalTime: data.response.DataHoraDestino,
                 stationsData: processStationData(data.response.NodesPassagemComboio),
             });
+            return res.json(newTrain);
         }
-        //console.log(existingTrain.stationsData);
 
         res.json(data);
     } catch (error) {
         console.error('Error fetching and inserting train data:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 

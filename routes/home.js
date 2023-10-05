@@ -118,7 +118,7 @@ app.get('/:trainnumber/:date', async (req, res) => {
                 stationsData: processStationData(data.response.NodesPassagemComboio),
             });
             const combinedResponse = {
-                ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
+                ...tableName.toJSON(), // Convert existingTrain to JSON if needed
                 delaysArray,
               };
             return res.json(combinedResponse);

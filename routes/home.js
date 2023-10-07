@@ -229,6 +229,7 @@ app.get('/update', async (req, res) => {
 
     const currentDate = new Date().toISOString().split('T')[0];
     for (const trainNumber of train_numbers) {
+        console.log(trainNumber);
         try {
             // Create the dynamic table name based on number and date
             const tableName = `${trainNumber}-${date}`;
@@ -306,6 +307,7 @@ app.get('/update', async (req, res) => {
             }
         }
         catch (error) {
+            console.log("error waat");
             continue;
         }
     }

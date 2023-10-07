@@ -305,4 +305,5 @@ app.get('/update', async (req, res) => {
             continue;
         }
     }
+    return res.json(combinedResponse);
 });

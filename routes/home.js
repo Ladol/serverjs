@@ -232,7 +232,7 @@ app.get('/update', async (req, res) => {
         console.log(trainNumber);
         try {
             // Create the dynamic table name based on number and date
-            const tableName = `${trainNumber}-${date}`;
+            const tableName = `${trainNumber}-${currentDate}`;
 
             // Find an existing record with the same tableName
             const existingTrain = await Train.findOne({

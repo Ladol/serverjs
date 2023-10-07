@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const cors = require("cors");
 const app = express();
 const router = express.Router();
-const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+//const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
@@ -33,6 +33,8 @@ module.exports = router;
 
 
 app.get('/:trainnumber/:date', async (req, res) => {
+    const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+
     try {
         const trainNumber = req.params.trainnumber; // Extract the train number from the URL
         if(!train_numbers.includes(trainNumber)){
@@ -223,6 +225,8 @@ async function calculateDelaysForTrain(train) {
 }
 
 app.get('/update', async (req, res) => {
+    const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+
     const currentDate = new Date().toISOString().split('T')[0];
     for (const trainNumber of train_numbers) {
         try {
@@ -305,5 +309,5 @@ app.get('/update', async (req, res) => {
             continue;
         }
     }
-    return res.json(combinedResponse);
+    return res.json('{hello ive been trying to reach you about your cars extended warranty');
 });

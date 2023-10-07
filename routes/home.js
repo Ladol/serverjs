@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const cors = require("cors");
 const app = express();
 const router = express.Router();
-//const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
@@ -33,11 +33,11 @@ module.exports = router;
 
 
 app.get('/:trainnumber/:date', async (req, res) => {
-    const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+    //const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
 
     try {
         const trainNumber = req.params.trainnumber; // Extract the train number from the URL
-        if(!train_numbers.includes(trainNumber)){
+        if(!train_numbers.includes(parseInt(trainNumber))){
             return res.status(500).json({ error: 'nao damos track a esse comboio :c (server)' });
         }
         const date = req.params.date; // Extract the date from the URL
@@ -224,11 +224,12 @@ async function calculateDelaysForTrain(train) {
     return { delays };
 }
 
-app.get('/update', async (req, res) => {
-    const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+app.get('/update/:start', async (req, res) => {
+    //const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
     let curr = 0;
     const currentDate = new Date().toISOString().split('T')[0];
-    for (const trainNumber of train_numbers) {
+    const start = req.params.start;
+    for (const trainNumber of train_numbers.slice(start, start + 5)) {
         curr += 1;
         console.log(curr);
         try {

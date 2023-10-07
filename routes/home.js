@@ -12,6 +12,9 @@ const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb
     port: 5432, // Default PostgreSQL port
     dialect: 'postgres',
     dialectModule: require('pg'),
+    pool: {
+        max: 5, // Set the maximum number of connections
+    },
 });
 
 

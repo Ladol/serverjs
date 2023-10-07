@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const cors = require("cors");
 const app = express();
 const router = express.Router();
+const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
 
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('yxaysfby', 'yxaysfby', '2t27aEF1m7eYM95PD8CpVOb937ZenlAf', {
@@ -22,10 +23,10 @@ app.use(
 const port = 9002;
 
 router.get("/", async (req, res, next) => {
-  return res.status(200).json({
-    title: "Express Testing",
-    message: "The app is working properly!",
-  });
+    return res.status(200).json({
+        title: "Express Testing",
+        message: "The app is working properly!",
+    });
 });
 
 module.exports = router;
@@ -34,6 +35,9 @@ module.exports = router;
 app.get('/:trainnumber/:date', async (req, res) => {
     try {
         const trainNumber = req.params.trainnumber; // Extract the train number from the URL
+        if(!train_numbers.includes(trainNumber)){
+            return res.status(500).json({ error: 'nao damos track a esse comboio :c (server)' });
+        }
         const date = req.params.date; // Extract the date from the URL
 
         // Parse the date string from the URL to a Date object
@@ -46,15 +50,15 @@ app.get('/:trainnumber/:date', async (req, res) => {
 
         // Compare the dates
         //if (urlDateOnly > currentDateOnly) {
-         //   return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
+        //   return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde.' });
         //}
-        if(urlDate.getFullYear() > currentDate.getFullYear()){
+        if (urlDate.getFullYear() > currentDate.getFullYear()) {
             return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (ano)' });
         }
-        else if(urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() > currentDate.getMonth()){
+        else if (urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() > currentDate.getMonth()) {
             return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (mes)' });
         }
-        else if(urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() === currentDate.getMonth() && urlDate.getDay() > currentDate.getDay()){
+        else if (urlDate.getFullYear() === currentDate.getFullYear() && urlDate.getMonth() === currentDate.getMonth() && urlDate.getDay() > currentDate.getDay()) {
             return res.status(500).json({ error: 'Infelizmente a nossa máquina do tempo avariou, tenta mais tarde. (dia)' });
         }
 
@@ -80,7 +84,7 @@ app.get('/:trainnumber/:date', async (req, res) => {
         }
         const data = await response.json();
 
-        if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO"){
+        if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO") {
             return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
         }
 
@@ -88,12 +92,12 @@ app.get('/:trainnumber/:date', async (req, res) => {
         // Use Sequelize to find all trains with tableName starting with trainNumber
         const trainsWithTrainNumber = await Train.findAll({
             where: {
-            tableName: {
-                [Sequelize.Op.startsWith]: `${trainNumber}-`,
-            },
+                tableName: {
+                    [Sequelize.Op.startsWith]: `${trainNumber}-`,
+                },
             },
         });
-        
+
         // Calculate delays for each train and store them in an array
         const delaysArray = [];
         for (const train of trainsWithTrainNumber) {
@@ -116,7 +120,7 @@ app.get('/:trainnumber/:date', async (req, res) => {
             const combinedResponse = {
                 ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
                 delaysArray,
-              };
+            };
             return res.json(combinedResponse);
         } else {
             // Create a new record in the dynamic table
@@ -128,9 +132,9 @@ app.get('/:trainnumber/:date', async (req, res) => {
                 stationsData: processStationData(data.response.NodesPassagemComboio),
             });
             const combinedResponse = {
-                ...tableName.toJSON(), // Convert existingTrain to JSON if needed
+                ...newTrain.toJSON(), // Convert existingTrain to JSON if needed
                 delaysArray,
-              };
+            };
             return res.json(combinedResponse);
         }
     } catch (error) {
@@ -166,7 +170,7 @@ function processStationData(nodesPassagemComboio, existingStationsData = []) {
         //console.log(stationName);
         // Check if the station exists in the existingStationsData
         const existingStationIndex = existingStationsData.findIndex(existingData => existingData.StationName === stationName);
-        if(existingStationIndex === -1){
+        if (existingStationIndex === -1) {
             console.log("no data");
             stationsData.push({
                 StationName: stationName,
@@ -193,27 +197,112 @@ async function calculateDelaysForTrain(train) {
     const delays = {};
     const tableNameParts = train.tableName.split('-');
     const date = tableNameParts[1] + '-' + tableNameParts[2] + '-' + tableNameParts[3];
-  
+
     // Initialize delays[date] array with zeros
     delays[date] = new Array(train.stationsData.length).fill(0);
-  
+
     // Calculate delays for each station
     train.stationsData.forEach((station, index) => {
-      const scheduledTimeParts = station.ScheduledTime.split(':');
-      const arrivalTimeParts = station.ArrivalTime.split(':');
-      
-      const scheduledHours = parseInt(scheduledTimeParts[0], 10);
-      const scheduledMinutes = parseInt(scheduledTimeParts[1], 10);
-      
-      const arrivalHours = parseInt(arrivalTimeParts[0], 10);
-      const arrivalMinutes = parseInt(arrivalTimeParts[1], 10);
-  
-      // Calculate delay in minutes
-      const delay = (arrivalHours - scheduledHours) * 60 + (arrivalMinutes - scheduledMinutes);
-      
-      // Update the delay in the delays[date] array
-      delays[date][index] = delay;
+        const scheduledTimeParts = station.ScheduledTime.split(':');
+        const arrivalTimeParts = station.ArrivalTime.split(':');
+
+        const scheduledHours = parseInt(scheduledTimeParts[0], 10);
+        const scheduledMinutes = parseInt(scheduledTimeParts[1], 10);
+
+        const arrivalHours = parseInt(arrivalTimeParts[0], 10);
+        const arrivalMinutes = parseInt(arrivalTimeParts[1], 10);
+
+        // Calculate delay in minutes
+        const delay = (arrivalHours - scheduledHours) * 60 + (arrivalMinutes - scheduledMinutes);
+
+        // Update the delay in the delays[date] array
+        delays[date][index] = delay;
     });
-  
+
     return { delays };
-  }
+}
+
+app.get('/update', async (req, res) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    for (const trainNumber of train_numbers) {
+        try {
+            // Create the dynamic table name based on number and date
+            const tableName = `${trainNumber}-${date}`;
+
+            // Find an existing record with the same tableName
+            const existingTrain = await Train.findOne({
+                where: { tableName },
+            });
+
+            // Use backticks for string interpolation
+            const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${currentDate}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                //throw new Error('Network response was not ok');
+                continue;
+            }
+            const data = await response.json();
+
+            if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO") {
+                //return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
+                continue;
+            }
+
+
+            // Use Sequelize to find all trains with tableName starting with trainNumber
+            const trainsWithTrainNumber = await Train.findAll({
+                where: {
+                    tableName: {
+                        [Sequelize.Op.startsWith]: `${trainNumber}-`,
+                    },
+                },
+            });
+
+            // Calculate delays for each train and store them in an array
+            const delaysArray = [];
+            for (const train of trainsWithTrainNumber) {
+                const delays = await calculateDelaysForTrain(train);
+                delaysArray.push(delays);
+            }
+
+            if (existingTrain) {
+                const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
+                //console.log(updatedStationsData);
+                // Update the existing record with new data
+                await existingTrain.update({
+                    name: data.response.Origem + ' to ' + data.response.Destino,
+                    departureTime: data.response.DataHoraOrigem,
+                    arrivalTime: data.response.DataHoraDestino,
+                    stationsData: updatedStationsData, // Explicitly set stationsData
+                }, {
+                    fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
+                });
+                const combinedResponse = {
+                    ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
+                    delaysArray,
+                };
+                //return res.json(combinedResponse);
+                continue;
+            } else {
+                // Create a new record in the dynamic table
+                const newTrain = await Train.create({
+                    tableName,
+                    name: data.response.Origem + ' to ' + data.response.Destino,
+                    departureTime: data.response.DataHoraOrigem,
+                    arrivalTime: data.response.DataHoraDestino,
+                    stationsData: processStationData(data.response.NodesPassagemComboio),
+                });
+                const combinedResponse = {
+                    ...newTrain.toJSON(), // Convert existingTrain to JSON if needed
+                    delaysArray,
+                };
+                //return res.json(combinedResponse);
+                continue;
+            }
+        }
+        catch (error) {
+            continue;
+        }
+    }
+});

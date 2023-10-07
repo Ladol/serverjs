@@ -245,6 +245,7 @@ app.get('/update', async (req, res) => {
             const response = await fetch(url);
             if (!response.ok) {
                 //throw new Error('Network response was not ok');
+                console.log("bad response");
                 continue;
             }
             const data = await response.json();
@@ -270,6 +271,8 @@ app.get('/update', async (req, res) => {
                 const delays = await calculateDelaysForTrain(train);
                 delaysArray.push(delays);
             }
+
+            console.log("made it past delays");
 
             if (existingTrain) {
                 const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
@@ -307,7 +310,7 @@ app.get('/update', async (req, res) => {
             }
         }
         catch (error) {
-            console.log("error waat");
+            console.log(error);
             continue;
         }
     }

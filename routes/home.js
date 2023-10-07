@@ -31,6 +31,82 @@ router.get("/", async (req, res, next) => {
 
 module.exports = router;
 
+app.get('/update/:start', async (req, res) => {
+    //const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
+    let curr = 0;
+    const currentDate = new Date().toISOString().split('T')[0];
+    const start = parseInt(req.params.start);
+    for (const trainNumber of train_numbers.slice(start, start + 5)) {
+        curr += 1;
+        console.log(curr);
+        try {
+            // Create the dynamic table name based on number and date
+            const tableName = `${trainNumber}-${currentDate}`;
+
+            // Find an existing record with the same tableName
+            const existingTrain = await Train.findOne({
+                where: { tableName },
+            });
+
+            // Use backticks for string interpolation
+            const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${currentDate}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                //throw new Error('Network response was not ok');
+                console.log("bad response");
+                continue;
+            }
+            const data = await response.json();
+
+            if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO") {
+                //return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
+                continue;
+            }
+
+
+            // Use Sequelize to find all trains with tableName starting with trainNumber
+            const trainsWithTrainNumber = await Train.findAll({
+                where: {
+                    tableName: {
+                        [Sequelize.Op.startsWith]: `${trainNumber}-`,
+                    },
+                },
+            });
+
+            if (existingTrain) {
+                const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
+                //console.log(updatedStationsData);
+                // Update the existing record with new data
+                await existingTrain.update({
+                    name: data.response.Origem + ' to ' + data.response.Destino,
+                    departureTime: data.response.DataHoraOrigem,
+                    arrivalTime: data.response.DataHoraDestino,
+                    stationsData: updatedStationsData, // Explicitly set stationsData
+                }, {
+                    fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
+                });
+                continue;
+            } else {
+                // Create a new record in the dynamic table
+                const newTrain = await Train.create({
+                    tableName,
+                    name: data.response.Origem + ' to ' + data.response.Destino,
+                    departureTime: data.response.DataHoraOrigem,
+                    arrivalTime: data.response.DataHoraDestino,
+                    stationsData: processStationData(data.response.NodesPassagemComboio),
+                });
+                continue;
+            }
+        }
+        catch (error) {
+            console.log(error);
+            continue;
+        }
+    }
+    return res.json('{hello ive been trying to reach you about your cars extended warranty');
+});
+
 
 app.get('/:trainnumber/:date', async (req, res) => {
     //const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
@@ -223,79 +299,3 @@ async function calculateDelaysForTrain(train) {
 
     return { delays };
 }
-
-app.get('/update/:start', async (req, res) => {
-    //const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
-    let curr = 0;
-    const currentDate = new Date().toISOString().split('T')[0];
-    const start = parseInt(req.params.start);
-    for (const trainNumber of train_numbers.slice(start, start + 5)) {
-        curr += 1;
-        console.log(curr);
-        try {
-            // Create the dynamic table name based on number and date
-            const tableName = `${trainNumber}-${currentDate}`;
-
-            // Find an existing record with the same tableName
-            const existingTrain = await Train.findOne({
-                where: { tableName },
-            });
-
-            // Use backticks for string interpolation
-            const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${currentDate}`;
-
-            const response = await fetch(url);
-            if (!response.ok) {
-                //throw new Error('Network response was not ok');
-                console.log("bad response");
-                continue;
-            }
-            const data = await response.json();
-
-            if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO") {
-                //return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
-                continue;
-            }
-
-
-            // Use Sequelize to find all trains with tableName starting with trainNumber
-            const trainsWithTrainNumber = await Train.findAll({
-                where: {
-                    tableName: {
-                        [Sequelize.Op.startsWith]: `${trainNumber}-`,
-                    },
-                },
-            });
-
-            if (existingTrain) {
-                const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
-                //console.log(updatedStationsData);
-                // Update the existing record with new data
-                await existingTrain.update({
-                    name: data.response.Origem + ' to ' + data.response.Destino,
-                    departureTime: data.response.DataHoraOrigem,
-                    arrivalTime: data.response.DataHoraDestino,
-                    stationsData: updatedStationsData, // Explicitly set stationsData
-                }, {
-                    fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
-                });
-                continue;
-            } else {
-                // Create a new record in the dynamic table
-                const newTrain = await Train.create({
-                    tableName,
-                    name: data.response.Origem + ' to ' + data.response.Destino,
-                    departureTime: data.response.DataHoraOrigem,
-                    arrivalTime: data.response.DataHoraDestino,
-                    stationsData: processStationData(data.response.NodesPassagemComboio),
-                });
-                continue;
-            }
-        }
-        catch (error) {
-            console.log(error);
-            continue;
-        }
-    }
-    return res.json('{hello ive been trying to reach you about your cars extended warranty');
-});

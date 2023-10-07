@@ -226,10 +226,11 @@ async function calculateDelaysForTrain(train) {
 
 app.get('/update', async (req, res) => {
     const train_numbers = [4400, 930, 932, 5600, 520, 540, 510, 730, 4416, 720, 4422, 4424, 524, 4426, 512, 4428, 722, 542, 4430, 4432, 126, 511, 4407, 121, 541, 4409, 721, 4413, 621, 4415, 513, 4417, 543, 523, 5601, 525, 931, 731, 4427, 515, 545, 723, 529, 131, 180, 123, 130, 182, 125, 120, 133, 122, 135, 132, 127, 184, 137, 186, 124, 134, 136];
-
+    let curr = 0;
     const currentDate = new Date().toISOString().split('T')[0];
     for (const trainNumber of train_numbers) {
-        console.log(trainNumber);
+        curr += 1;
+        console.log(curr);
         try {
             // Create the dynamic table name based on number and date
             const tableName = `${trainNumber}-${currentDate}`;
@@ -265,15 +266,6 @@ app.get('/update', async (req, res) => {
                 },
             });
 
-            // Calculate delays for each train and store them in an array
-            const delaysArray = [];
-            for (const train of trainsWithTrainNumber) {
-                const delays = await calculateDelaysForTrain(train);
-                delaysArray.push(delays);
-            }
-
-            console.log("made it past delays");
-
             if (existingTrain) {
                 const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
                 //console.log(updatedStationsData);
@@ -286,11 +278,6 @@ app.get('/update', async (req, res) => {
                 }, {
                     fields: ['name', 'departureTime', 'arrivalTime', 'stationsData'], // Specify fields to update
                 });
-                const combinedResponse = {
-                    ...existingTrain.toJSON(), // Convert existingTrain to JSON if needed
-                    delaysArray,
-                };
-                //return res.json(combinedResponse);
                 continue;
             } else {
                 // Create a new record in the dynamic table
@@ -301,11 +288,6 @@ app.get('/update', async (req, res) => {
                     arrivalTime: data.response.DataHoraDestino,
                     stationsData: processStationData(data.response.NodesPassagemComboio),
                 });
-                const combinedResponse = {
-                    ...newTrain.toJSON(), // Convert existingTrain to JSON if needed
-                    delaysArray,
-                };
-                //return res.json(combinedResponse);
                 continue;
             }
         }

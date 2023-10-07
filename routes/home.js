@@ -41,13 +41,6 @@ app.get('/update/:start', async (req, res) => {
     for (const trainNumber of train_numbers.slice(start, start + 5)) {
         console.log(trainNumber);
         try {
-            // Create the dynamic table name based on number and date
-            const tableName = `${trainNumber}-${currentDate}`;
-
-            // Find an existing record with the same tableName
-            const existingTrain = await Train.findOne({
-                where: { tableName },
-            });
 
             // Use backticks for string interpolation
             const url = `https://www.infraestruturasdeportugal.pt/negocios-e-servicos/horarios-ncombio/${trainNumber}/${currentDate}`;
@@ -62,19 +55,18 @@ app.get('/update/:start', async (req, res) => {
 
             if (data.response.NodesPassagemComboio.DataHoraOrigem === null || data.response.NodesPassagemComboio.SituacaoComboio === "SUPRIMIDO") {
                 //return res.status(500).json({ error: 'Comboio não se realiza ou foi suprimido' });
+                console.log("sup/nao r")
                 continue;
             }
 
+             // Create the dynamic table name based on number and date
+             const tableName = `${trainNumber}-${currentDate}`;
 
-            // Use Sequelize to find all trains with tableName starting with trainNumber
-            const trainsWithTrainNumber = await Train.findAll({
-                where: {
-                    tableName: {
-                        [Sequelize.Op.startsWith]: `${trainNumber}-`,
-                    },
-                },
+             // Find an existing record with the same tableName
+             const existingTrain = await Train.findOne({
+                where: { tableName },
             });
-
+            console.log("exist check");
             if (existingTrain) {
                 const updatedStationsData = processStationData(data.response.NodesPassagemComboio, existingTrain.stationsData);
                 //console.log(updatedStationsData);
